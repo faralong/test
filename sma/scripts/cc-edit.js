@@ -6,7 +6,7 @@ if(typeof(Worker) !== "undefined")
     let consoleOpen = false;
     let checkTimestamp = Date.now();
 
-    const consoleCheckerThread = new Worker(ccWorkerScriptSrc);
+    const consoleCheckerThread = new Worker("data:text/plain;charset=utf-8;base64,InVzZSBzdHJpY3QiOwoKc2V0SW50ZXJ2YWwoKCkgPT4KewogICAgc2VsZi5wb3N0TWVzc2FnZShEYXRlLm5vdygpKTsKICAgIGRlYnVnZ2VyOwp9LCBzZWxmLmNoZWNrVGltZURlbGF5KTsK");
 
     consoleCheckerThread.addEventListener("message", (msg) =>
     {
