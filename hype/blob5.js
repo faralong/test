@@ -10466,7 +10466,10 @@ var unityFramework = ( () => {
             var success = GL.makeContextCurrent(contextHandle);
             return success ? 0 : -5
         }
-        var ENV = {};
+        var ENV = {
+            "DOCUMENT_URL": "https://hypper-sandbox.game-files.crazygames.com/unity/unity2020/hypper-sandbox/",
+            "APPLICATION_ABSOLUTE_URL": "https://hypper-sandbox.game-files.crazygames.com/unity/unity2020/hypper-sandbox/"
+        };
         function getExecutableName() {
             return thisProgram || "./this.program"
         }
@@ -10508,6 +10511,7 @@ var unityFramework = ( () => {
         function _environ_get(__environ, environ_buf) {
             var bufSize = 0;
             getEnvStrings().forEach(function(string, i) {
+                console.log(string);
                 var ptr = environ_buf + bufSize;
                 HEAPU32[__environ + i * 4 >> 2] = ptr;
                 stringToAscii(string, ptr);
