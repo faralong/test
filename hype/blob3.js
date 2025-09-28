@@ -10493,6 +10493,8 @@ var unityFramework = ( () => {
                     strings.push(x + "=" + env[x])
                 }
                 getEnvStrings.strings = strings
+                console.log("[Unity ENV]", strings);
+
             }
             return getEnvStrings.strings
         }
