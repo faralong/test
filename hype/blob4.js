@@ -10482,6 +10482,7 @@ var unityFramework = ( () => {
                     "LANG": lang,
                     "_": getExecutableName()
                 };
+                console.log(ENV);
                 for (var x in ENV) {
                     if (ENV[x] === undefined)
                         delete env[x];
