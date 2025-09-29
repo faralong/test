@@ -5933,8 +5933,8 @@ var unityFramework = ( () => {
         }
         function _JS_SystemInfo_GetDocumentURL(buffer, bufferSize) {
             if (buffer)
-                stringToUTF8(document.URL, buffer, bufferSize);
-            return lengthBytesUTF8(document.URL)
+                stringToUTF8("https://hypper-sandbox.game-files.crazygames.com/unity/unity2020/hypper-sandbox/", buffer, bufferSize);
+            return lengthBytesUTF8("https://hypper-sandbox.game-files.crazygames.com/unity/unity2020/hypper-sandbox/")
         }
         function _JS_SystemInfo_GetGPUInfo(buffer, bufferSize) {
             var gpuinfo = Module.SystemInfo.gpu;
