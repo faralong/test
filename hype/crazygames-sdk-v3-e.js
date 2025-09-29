@@ -5926,7 +5926,7 @@
                         window.addEventListener("message", n, !1)
                     })
                 }, t.shouldInitLocalMode = function() {
-                    return ["localhost", "127.0.0.1", "preview.construct.net"].includes(window.location.hostname) || "true" === (0, a.getQueryStringValue)("useLocalSdk")
+                    return true;
                 }, t.checkIsCrazyGames = async function() {
                     let e, n = !1;
                     const r = new Promise(t => {
