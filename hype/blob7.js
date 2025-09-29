@@ -768,7 +768,7 @@ var unityFramework = ( () => {
                 }
             };
             var script = document.createElement("script");
-            script.src = "crazygames-sdk-v3.js";
+            script.src = "crazygames-sdk-v3-e.js";
             document.head.appendChild(script);
             script.addEventListener("load", function() {
                 window.CrazyGames.SDK.init(initOptions).then(function() {
