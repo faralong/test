@@ -1,34 +1,24 @@
 <!DOCTYPE html>
 <html lang="en-us">
+
+<!--Zoom out if the canvas is too big for your screen.-->
   <head>
-      <base href = "https://cdn.jsdelivr.net/gh/faralong/all@main/sandboxcity/">
+      <base href="https://cdn.jsdelivr.net/gh/faralong/test@main/hype/">
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     
-    <link rel="stylesheet" href="TemplateData/style.css">
-	<link rel="manifest" href="manifest.json">
-  </head>
-  <body class="noselect">
-    <div id="unity-container">
-      <canvas id="unity-canvas"></canvas>
-    </div>
-    <div id="loading-cover" style="display:none;">
-      <div id="unity-loading-bar">
-        <div id="unity-logo"><img src="logo.png"></div>
-        </br></br></br>
-        <div id="unity-progress-bar-empty" style="display: none;">
-          <div id="unity-progress-bar-full"></div>
-        </div>
-        <div class="spinner"></div>
-      </div>
-    </div>
-    <script src = "jszip.js"></script>
-     <script>
-      
+   
 
-      
-      
+
+  </head>
+  <body style="margin:0;padding:0" class="noselect">
+    
+    <canvas id="unity-canvas"
+      style="position:fixed;top:0;left:0;width:100%;height:100%;outline:none"></canvas>
+
+    <script src="jszip.js"></script>
+    <script>
   async function fetchAndCombineZip(binUrls) {
     const responses = await Promise.all(binUrls.map(url => fetch(url)));
     const buffers = await Promise.all(responses.map(res => res.arrayBuffer()));
@@ -55,10 +45,10 @@ async function unzipWebpFromExternalBins(binUrls) {
                 mime = 'text/css';
             } else if (filename.endsWith('.html')) {
                 mime = 'text/html';
-            } else if (filename.endsWith('.webp')) {
-                mime = 'image/webp';
-            } else if (filename.endsWith('.png')) {
-                mime = 'image/png';
+            } else if (filename.endsWith('.wasm.br')) {
+                mime = 'application/wasm';
+            } else if (filename.endsWith('.js.br')) {
+                mime = 'application/javascript';
             } else if (filename.endsWith('.jpg') || filename.endsWith('.jpeg')) {
                 mime = 'image/jpeg';
             }
@@ -74,10 +64,10 @@ async function unzipWebpFromExternalBins(binUrls) {
 
 let blobUrlss = "";
 let binParts = [
-  "parts-1.bin",
-  "parts-2.bin",
-  "parts-3.bin",
-  "parts-4.bin",
+  "parts_1.bin",
+  "parts_2.bin",
+  "parts_3.bin",
+  "parts_4.bin",
 ];
 
 unzipWebpFromExternalBins(binParts).then(blobUrls => {
@@ -85,7 +75,6 @@ unzipWebpFromExternalBins(binParts).then(blobUrls => {
     const ORIGINAL_CREATE_ELEMENT = document.createElement;
     const ORIGINAL_SET_ATTRIBUTE = Element.prototype.setAttribute;
 
-    
     document.createElement = function(tagName) {
         const el = ORIGINAL_CREATE_ELEMENT.call(this, tagName);
 
@@ -95,7 +84,6 @@ unzipWebpFromExternalBins(binParts).then(blobUrls => {
                     const filename = extractFilename(newSrc);
                     const replacement = blobUrlss[filename];
                     if (replacement) {
-                        
                         ORIGINAL_SET_ATTRIBUTE.call(el, 'src', replacement);
                     } else {
                         ORIGINAL_SET_ATTRIBUTE.call(el, 'src', newSrc);
@@ -111,17 +99,14 @@ unzipWebpFromExternalBins(binParts).then(blobUrls => {
         return el;
     };
 
-    
     Element.prototype.setAttribute = function(name, value) {
         if (this.tagName === 'SCRIPT' && name === 'src') {
             const filename = extractFilename(value);
             const replacement = blobUrlss[filename];
             if (replacement) {
-             
                 return ORIGINAL_SET_ATTRIBUTE.call(this, name, replacement);
             }
         }
-
         return ORIGINAL_SET_ATTRIBUTE.call(this, name, value);
     };
 
@@ -133,160 +118,143 @@ unzipWebpFromExternalBins(binParts).then(blobUrls => {
         }
     }
 
+    const imageSrcDescriptor = Object.getOwnPropertyDescriptor(Image.prototype, 'src');
+    Object.defineProperty(Image.prototype, 'src', {
+      set(value) {
+        const newURL = rewriteURL(value);
+        imageSrcDescriptor.set.call(this, newURL);
+      },
+      get: imageSrcDescriptor.get,
+      configurable: true,
+      enumerable: true,
+    });
 
-const imageSrcDescriptor = Object.getOwnPropertyDescriptor(Image.prototype, 'src');
-Object.defineProperty(Image.prototype, 'src', {
-  set(value) {
-    const newURL = rewriteURL(value);
-    imageSrcDescriptor.set.call(this, newURL);
-  },
-  get: imageSrcDescriptor.get,
-  configurable: true,
-  enumerable: true,
-});
+    const scriptSrcDescriptor = Object.getOwnPropertyDescriptor(HTMLScriptElement.prototype, 'src');
+    Object.defineProperty(HTMLScriptElement.prototype, 'src', {
+      set(value) {
+        const newURL = rewriteURL(value);
+        scriptSrcDescriptor.set.call(this, newURL);
+      },
+      get: scriptSrcDescriptor.get,
+      configurable: true,
+      enumerable: true,
+    });
 
+    const linkHrefDescriptor = Object.getOwnPropertyDescriptor(HTMLLinkElement.prototype, 'href');
+    Object.defineProperty(HTMLLinkElement.prototype, 'href', {
+      set(value) {
+        const newURL = rewriteURL(value);
+        linkHrefDescriptor.set.call(this, newURL);
+      },
+      get: linkHrefDescriptor.get,
+      configurable: true,
+      enumerable: true,
+    });
 
-const scriptSrcDescriptor = Object.getOwnPropertyDescriptor(HTMLScriptElement.prototype, 'src');
-Object.defineProperty(HTMLScriptElement.prototype, 'src', {
-  set(value) {
-    const newURL = rewriteURL(value);
-    scriptSrcDescriptor.set.call(this, newURL);
-  },
-  get: scriptSrcDescriptor.get,
-  configurable: true,
-  enumerable: true,
-});
+    const mediaSrcDescriptor = Object.getOwnPropertyDescriptor(HTMLMediaElement.prototype, 'src');
+    Object.defineProperty(HTMLMediaElement.prototype, 'src', {
+      set(value) {
+        const newURL = rewriteURL(value);
+        mediaSrcDescriptor.set.call(this, newURL);
+      },
+      get: mediaSrcDescriptor.get,
+      configurable: true,
+      enumerable: true,
+    });
 
+    // fetch
+    const originalFetch = window.fetch;
+    window.fetch = function(resource, init) {
+      if (typeof resource === "string") {
+        resource = rewriteURL(resource);
+      } else if (resource instanceof Request) {
+        resource = new Request(rewriteURL(resource.url), resource);
+      }
+      return originalFetch.call(this, resource, init);
+    };
 
-const linkHrefDescriptor = Object.getOwnPropertyDescriptor(HTMLLinkElement.prototype, 'href');
-Object.defineProperty(HTMLLinkElement.prototype, 'href', {
-  set(value) {
-    const newURL = rewriteURL(value);
-    linkHrefDescriptor.set.call(this, newURL);
-  },
-  get: linkHrefDescriptor.get,
-  configurable: true,
-  enumerable: true,
-});
+    // XMLHttpRequest
+    const originalOpen = XMLHttpRequest.prototype.open;
+    XMLHttpRequest.prototype.open = function(method, url, ...rest) {
+      const newURL = rewriteURL(url);
+      return originalOpen.call(this, method, newURL, ...rest);
+    };
 
+    const OriginalAudio = window.Audio;
+    window.Audio = function(src) {
+      const audio = new OriginalAudio();
+      if (src) {
+        audio.src = rewriteURL(src);
+      }
+      return audio;
+    };
+    window.Audio.prototype = OriginalAudio.prototype;
 
-const mediaSrcDescriptor = Object.getOwnPropertyDescriptor(HTMLMediaElement.prototype, 'src');
-Object.defineProperty(HTMLMediaElement.prototype, 'src', {
-  set(value) {
-    const newURL = rewriteURL(value);
-    mediaSrcDescriptor.set.call(this, newURL);
-  },
-  get: mediaSrcDescriptor.get,
-  configurable: true,
-  enumerable: true,
-});
+    function rewriteURL(original) {
+      var trimmed = original.split("/").pop();
+      if (trimmed.includes("?")) trimmed = trimmed.split("?")[0]
+      return blobUrlss[trimmed] || original;
+    }
 
-// fetch
-const originalFetch = window.fetch;
-window.fetch = function(resource, init) {
+    window.addEventListener("load", function () {
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("ServiceWorker.js");
+      }
+    });
 
-  if (typeof resource === "string") {
-  //console.log(resource)
-    resource = rewriteURL(resource);
-  } else if (resource instanceof Request) {
-    resource = new Request(rewriteURL(resource.url), resource);
-  }
-  return originalFetch.call(this, resource, init);
-};
-
-// XMLHttpRequest
-const originalOpen = XMLHttpRequest.prototype.open;
-XMLHttpRequest.prototype.open = function(method, url, ...rest) {
-  const newURL = rewriteURL(url);
-  return originalOpen.call(this, method, newURL, ...rest);
-};
-
-
-const OriginalAudio = window.Audio;
-window.Audio = function(src) {
-  const audio = new OriginalAudio();
-  if (src) {
-    audio.src = rewriteURL(src);
-  }
-  return audio;
-};
-window.Audio.prototype = OriginalAudio.prototype;
-
-
-function rewriteURL(original) {
-  var trimmed = original.split("/").pop();
-  //console.log(trimmed)
-  if (trimmed.includes("?")) trimmed = trimmed.split("?")[0]
-  return blobUrlss[trimmed] || original;
-}
-	  window.addEventListener("load", function () {
-        if ("serviceWorker" in navigator) {
-          navigator.serviceWorker.register("ServiceWorker.js");
-        }
+    const canvas = document.querySelector("#unity-canvas");
+    const buildUrl = "Build";
+    const loaderUrl = buildUrl + "/build.loader-edit3.js";
+    const config = {
+      dataUrl: buildUrl + "/a2513a5aa7d939d35b7ce57299d8ee17.data.br",
+      frameworkUrl: buildUrl + "/64151c8d9473352a0777c93b9711db55.framework.js.br",
+      codeUrl: buildUrl + "/7e3da7fb06a6d1a4fe4174ebc1f12c5f.wasm.br",
+      streamingAssetsUrl: "StreamingAssets",
+      companyName: "Something",
+      productName: "Hype",
+      productVersion: "6.40"
+    };
+    
+    var gameInstance;
+    var script = document.createElement("script");
+    script.src = loaderUrl;
+    script.onload = () => {
+      createUnityInstance(canvas, config, (progress) => {
+        
+      }).then((unityInstance) => {
+        console.log("<do.G> Unity inited");
+        gameInstance = unityInstance;
+      }).catch((message) => {
+        alert(message);
       });
-	  
-	  const container = document.querySelector("#unity-container");
-      const canvas = document.querySelector("#unity-canvas");
-      const loadingCover = document.querySelector("#loading-cover");
-      const progressBarEmpty = document.querySelector("#unity-progress-bar-empty");
-      const progressBarFull = document.querySelector("#unity-progress-bar-full");
-      const spinner = document.querySelector('.spinner');
+    };
+    document.body.appendChild(script);
 
-      const buildUrl = "Build";
-      const loaderUrl = buildUrl + "/137c926bb4a06a78b3e12334214e0043.loader.js";
-      const config = {
-        dataUrl: buildUrl + "/a2513a5aa7d939d35b7ce57299d8ee17.data.br",
-        frameworkUrl: buildUrl + "/64151c8d9473352a0777c93b9711db55.framework.js.br",
-        codeUrl: buildUrl + "/7e3da7fb06a6d1a4fe4174ebc1f12c5f.wasm.br",
-        streamingAssetsUrl: "StreamingAssets",
-        companyName: "Something",
-        productName: "Hype",
-        productVersion: "6.40"
-      };
-	  
-      loadingCover.style.display = "";
-	  
-	  var gameInstance;
-      var script = document.createElement("script");
-      script.src = loaderUrl;
-      script.onload = () => {
-        createUnityInstance(canvas, config, (progress) => {
-		  spinner.style.display = "none";
-          progressBarEmpty.style.display = "";
-          progressBarFull.style.width = 100 * progress + "%";
-        }).then((unityInstance) => {
-		  console.log("<do.G> Unity inited");
-          gameInstance = unityInstance;
-          loadingCover.style.display = "none";
-		  loadAds();
-        }).catch((message) => {
-          alert(message);
-        });
-      };
-      document.body.appendChild(script);
-	  
-	  // Focus
-  	  function setFocus() {
-  	    container.focus();
-  		window.focus();
-  		canvas.focus();
-  	  }
-
-  	  window.addEventListener("touchstart", () => {
-  	    setFocus();
-  	  });
-  	  window.addEventListener("pointerdown", () => {
-  	    setFocus();
-  	  });
-  	  window.addEventListener("resize", () => {
-  	    setFocus();
-  	  });
+    function setFocus() {
+      window.focus();
+      canvas.focus();
+    }
+    window.addEventListener("touchstart", setFocus);
+    window.addEventListener("pointerdown", setFocus);
+    window.addEventListener("resize", setFocus);
 });
     </script>
+	<script>
+function resizeCanvas() {
+    const canvas = document.getElementById("unity-canvas");
+   
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
     
+    canvas.style.width = window.innerWidth + "px";
+    canvas.style.height = window.innerHeight + "px";
+}
 
-	
-	
-	
+
+window.addEventListener("load", resizeCanvas);
+window.addEventListener("resize", resizeCanvas);
+</script>
+
+
   </body>
 </html>
